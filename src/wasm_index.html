@@ -1,0 +1,407 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+		<meta name="viewport" content="viewport-fit=cover, user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+		<title>Biolab Disaster</title>
+		<style>
+			html, body {
+				color: #ccc;
+				font-family: Monospace;
+				font-size: 13px;
+				background-color: #111;
+				margin: 0px;
+			}
+			a {
+				color: #ffc603;
+				text-decoration: none;
+			}
+			a:hover {
+				text-decoration: underline;	
+			}
+			/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+			canvas {
+				border: 0px none; 
+				background-color: black; 
+				width: 100%; 
+				height: 100%;
+
+				/* Modify the aspect ration to be suitable for your game */
+				aspect-ratio: 240 / 160;
+			}
+
+			#head {
+				left: 0;
+				right: 0;
+				top: 0;
+				padding: 4px 16px 6px 16px;
+				xheight: 24px;
+				background-color: #222;
+				display: flex;
+				justify-content: space-between;
+			}
+			@keyframes page-loader { 
+				0% {transform: rotate(0deg); } 
+				100% { transform: rotate(360deg);}
+			}
+			.container {
+				text-align: center;
+				position: relative;
+			}
+			.info-overlay {
+				text-align: center;
+				position: absolute;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				margin: auto;
+				width: 200px;
+				height: 200px;
+				display: none;
+			}
+			.fullscreen {
+				margin: 0 8px;
+			}
+			#spinner {
+				content: "";
+				border-radius: 50%;
+				width: 48px;
+				height: 48px;
+				position: absolute;
+				margin: auto;
+				top: 0;
+				bottom: 0;
+				left: 0;
+				right: 0;
+				border-top: 2px solid #222;
+				border-right: 2px solid #222;
+				border-bottom: 2px solid #222;
+				border-left: 2px solid #ffc603;
+				transform: translateZ(0);
+				animation: page-loader 1.1s infinite linear;
+			}
+			h1 {
+				color: #fff;
+				display: inline-block;
+				margin: 0;
+				padding: 0;
+				font-size: 12px;
+			}
+			.key {
+				margin-right: 16px;
+			}
+			kbd {
+				background-color: #eee;
+				border-radius: 3px;
+				border: 1px solid #b4b4b4;
+				box-shadow:
+					0 1px 1px rgba(0, 0, 0, 0.2),
+					0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+				color: #333;
+				display: inline-block;
+				font-size: 0.85em;
+				font-weight: 700;
+				line-height: 1;
+				padding: 1px 2px;
+				white-space: nowrap;
+			}
+			button#load {
+				color: #ffc603;
+				font-size: 22px;
+				font-weight: bold;
+				background-color: #333;
+				letter-spacing: 2px;
+				padding: 8px 32px;
+				border: none;
+				border-radius: 4px;
+				cursor: pointer;
+			}
+			button#load:hover {
+				color: #000;
+				background-color: #fff;
+			}
+
+
+			.button {
+				display: none;
+				position: absolute;
+				cursor: pointer;
+				user-select: none;
+				touch-callout: none;
+				user-drag: none;
+				-webkit-user-select: none;
+				-webkit-touch-callout: none;
+				-webkit-user-drag: none;
+				opacity: 0.2;
+			}
+			body.touch .button {
+				display: block;
+			}
+			body.touch #head {
+				display: none;
+			}
+			body.touch {
+				user-select: none;
+				touch-callout: none;
+				user-drag: none;
+				-webkit-user-select: none;
+				-webkit-touch-callout: none;
+				-webkit-user-drag: none;
+			}
+			.button.active {
+				opacity: 0.6;
+			}
+			.button div {
+				position: absolute;
+				left: 0;
+				right: 0;
+				top: 0;
+				bottom: 0;
+				margin: auto;
+				color: #000;
+				background-color: #ffff;
+				text-align: center;
+			}
+			.button-round {
+				width: 12vw;
+				height: 12vw;
+			}
+			.button-round div {
+				width: 7vw;
+				height: 7vw;
+				border-radius: 100%;
+				font-size: 3vw;
+				font-weight: bold;
+				line-height: 7vw;
+				
+			}
+			.button-pill {
+				width: 12vw;
+				height: 6vw;
+			}
+			.button-pill div {
+				font-size: 1.5vw;
+				width: 7vw;
+				height: 3.5vw;
+				border-radius: 3.5vw;
+				line-height: 3.5vw;
+			}
+
+			.button-dpad {
+				width: 6vw;
+				height: 6vw;
+			}
+
+			.button-dpad div {
+				width: 7;
+				height: 7;
+			}
+			.button-dpad div:after {
+				content: '';
+				height: 0;
+				width: 0;
+				position: absolute;
+			}
+			.button-dpad-up div {
+				border-top-left-radius: 0.5vw;
+				border-top-right-radius: 0.5vw;
+			}
+			.button-dpad-up div:after {
+				left: 0;
+				bottom: -2.85vw;
+				border-left: 3vw solid transparent;
+				border-right: 3vw solid transparent;
+				border-top: 2.9vw solid #fff;
+			}
+			.button-dpad-down div {
+				border-bottom-left-radius: 0.5vw;
+				border-bottom-right-radius: 0.5vw;
+			}
+			.button-dpad-down div:after {
+				left: 0;
+				top: -2.85vw;
+				border-left: 3vw solid transparent;
+				border-right: 3vw solid transparent;
+				border-bottom: 2.9vw solid #fff;
+			}
+			.button-dpad-left div {
+				border-top-left-radius: 0.5vw;
+				border-bottom-left-radius: 0.5vw;
+			}
+			.button-dpad-left div:after {
+				top: 0;
+				right: -2.85vw;
+				border-top: 3vw solid transparent;
+				border-bottom: 3vw solid transparent;
+				border-left: 2.9vw solid #fff;
+			}
+			.button-dpad-right div {
+				border-top-right-radius: 0.5vw;
+				border-bottom-right-radius: 0.5vw;
+			}
+			.button-dpad-right div:after {
+				top: 0;
+				left: -2.85vw;
+				border-top: 3vw solid transparent;
+				border-bottom: 3vw solid transparent;
+				border-right: 2.9vw solid #fff;
+			}
+		</style>
+	</head>
+	<body>
+		<div id="head">
+			<div>
+				<h1>Biolab Disaster</h1>
+				<a href="#" id="fullscreen">fullscreen</a>
+				<span class="key"><kbd>◀</kbd><kbd>▶</kbd> move</span>
+				<span class="key"><kbd>X</kbd> jump</span>
+				<span class="key"><kbd>C</kbd> shoot</span>
+			</div>
+			<div>
+				Read: 
+				<a href="https://phoboslab.org/log/2024/08/high_impact">
+					Porting my JavaScript Game Engine to C for No Reason
+				</a>
+			</div>
+		</div>
+		<div id="game" class="container">
+			<canvas id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+			<div class="info-overlay" id="loading">
+				<div id="spinner"></div>
+				<div id="status">Downloading...</div>
+				<div>
+					<progress value="0" max="100" id="progress" hidden=1></progress>  
+				</div>
+			</div>
+			<div class="info-overlay" id="load-overlay">
+				<button id="load">PLAY</button>
+			</div>
+			<!-- button enums from src/input.h -->
+			<div class="button button-dpad button-dpad-up" style="left: 9vw; bottom: 22.5vw" data-button="82"><div></div></div>
+			<div class="button button-dpad button-dpad-down" style="left: 9vw; bottom: 9.5vw" data-button="81"><div></div></div>
+			<div class="button button-dpad button-dpad-left" style="left: 2vw; bottom: 16vw" data-button="80"><div></div></div>
+			<div class="button button-dpad button-dpad-right" style="left: 16vw; bottom: 16vw" data-button="79"><div></div></div>
+
+			<div class="button button-round" style="right: 2vw; bottom: 10vw" data-button="27"><div>X</div></div>
+			<div class="button button-round" style="right: 14vw; bottom: 10vw" data-button="6"><div>Y</div></div>
+		</div>
+			
+		</div>
+		<script type='text/javascript'>
+			var loadScript = (ev, src) => {
+				ev.preventDefault();
+
+				// Hide load-overlay, show loader
+				document.getElementById('load-overlay').style.display = 'none';
+				document.getElementById('loading').style.display = 'block';
+
+				// Load the requested script
+				var s = document.createElement('script');
+				s.setAttribute('src', src);
+				document.head.appendChild(s);
+
+				// Attemp to unlock Audio :(
+				var audioCtx = new AudioContext();
+				audioCtx.resume();
+				return false;
+			};
+
+			var requestFullscreen = (ev) => {
+				ev.preventDefault();
+				document.getElementById('game').requestFullscreen();
+			};
+
+			document.getElementById('load-overlay').style.display = 'block';
+			document.getElementById('fullscreen').addEventListener('click', (ev) => requestFullscreen(ev))
+			document.getElementById('load').addEventListener('click', (ev) => loadScript(ev, 'game.js'));
+
+			var statusElement = document.getElementById('status');
+			var progressElement = document.getElementById('progress');
+			var spinnerElement = document.getElementById('spinner');
+
+			let onGameLoad = function() {
+				document.getElementById('loading').style.display = 'none';
+				window.scrollTo(0, 0);
+
+				// Setup touch buttons if this is a touch device
+				if ('ontouchstart' in window) {
+					document.getElementById('head').style.display = 'none';
+					document.body.classList.add('touch');
+					let touchButtons = document.getElementsByClassName('button');
+					for (let i = 0; i < touchButtons.length; i++) {
+						let button = touchButtons[i];
+						button.addEventListener('touchstart', (ev) => {
+							Module._input_set_button_state(parseInt(ev.currentTarget.dataset.button), 1);
+							ev.currentTarget.classList.add('active');
+						});
+						button.addEventListener('touchend', (ev) => {
+							Module._input_set_button_state(parseInt(ev.currentTarget.dataset.button), 0);
+							ev.currentTarget.classList.remove('active');
+						});
+					}
+				}
+			};
+
+			var Module = {
+				preRun: [],
+				postRun: [],
+				print: function(text) {
+					if (arguments.length > 1) text = Array.prototype.slice.call(arguments).join(' ');
+					console.log(text);
+				},
+				canvas: document.getElementById('canvas'),
+				setStatus: (text) => {
+					if (!Module.setStatus.last) {
+						Module.setStatus.last = { time: Date.now(), text: '' };
+					}
+					if (text === Module.setStatus.last.text) {
+						return;
+					}
+					var m = text.match(/([^(]+)\((\d+(\.\d+)?)\/(\d+)\)/);
+					var now = Date.now();
+					if (m && now - Module.setStatus.last.time < 30) {
+						return; // if this is a progress update, skip it if too soon
+					}
+					Module.setStatus.last.time = now;
+					Module.setStatus.last.text = text;
+					if (m) {
+						text = m[1];
+						progressElement.value = parseInt(m[2])*100;
+						progressElement.max = parseInt(m[4])*100;
+						progressElement.hidden = false;
+						spinnerElement.hidden = false;
+					} else {
+						progressElement.value = null;
+						progressElement.max = null;
+						progressElement.hidden = true;
+						if (!text) {
+							spinnerElement.hidden = true;
+							onGameLoad();
+						}
+					}
+					statusElement.innerHTML = text;
+				},
+				totalDependencies: 0,
+				monitorRunDependencies: (left) => {
+					Module.totalDependencies = Math.max(Module.totalDependencies, left);
+					Module.setStatus(left ? 'preparing... (' + (Module.totalDependencies-left) + '/' + Module.totalDependencies + ')' : 'all downloads complete.');
+				}
+			};
+			Module.setStatus('downloading...');
+			window.onerror = () => {
+				Module.setStatus('Exception thrown, see JavaScript console');
+				document.getElementById('loading').style.display = 'block';
+				spinnerElement.style.display = 'none';
+				Module.setStatus = (text) => {
+					if (text) {
+						console.error('[post-exception status] ' + text);
+					}
+				};
+			};
+		</script>
+	</body>
+</html>

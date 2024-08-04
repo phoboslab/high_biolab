@@ -1,0 +1,3 @@
+[submodule "high_impact"]
+	path = high_impact
+	url = git@github.com:phoboslab/high_impact.git
