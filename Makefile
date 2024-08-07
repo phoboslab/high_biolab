@@ -154,6 +154,7 @@ ASSETS_JSON := $(shell find $(ASSETS_SRC_DIR) -type f -name '*.json')
 ASSETS_ENC_QOI := $(ASSETS_PNG:assets/%.png=$(ASSETS_BUILD_DIR)/%.qoi)
 ASSETS_ENC_QOA := $(ASSETS_WAV:assets/%.wav=$(ASSETS_BUILD_DIR)/%.qoa)
 ASSETS_CP_JSON := $(ASSETS_JSON:assets/%.json=$(ASSETS_BUILD_DIR)/%.json)
+ASSETS_PATH := $(shell pwd)
 
 assets: qoiconv qoaconv assets_build
 assets_build: $(ASSETS_ENC_QOI) $(ASSETS_ENC_QOA) $(ASSETS_CP_JSON)
@@ -204,7 +205,7 @@ sokol_build: $(SOKOL_COMMON_OBJ)
 
 $(OBJ_DIR)/sokol/%.o: %.c
 	mkdir -p $(dir $@)
-	$(CC) $(C_FLAGS) -DPLATFORM_SOKOL -MMD -MP -c $< -o $@
+	$(CC) $(C_FLAGS) -DPATH_ASSETS=$(ASSETS_PATH)/build/ -DPLATFORM_SOKOL -MMD -MP -c $< -o $@
 
 -include $(SOKOL_COMMON_DEPS)
 
