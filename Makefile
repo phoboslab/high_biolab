@@ -136,12 +136,12 @@ endif
 qoiconv: $(QOICONV)
 $(QOICONV): high_impact/libs/qoiconv.c high_impact/libs/stb_image.h high_impact/libs/stb_image_write.h high_impact/libs/qoi.h
 	@mkdir -p $(@D)
-	$(CC) -std=c99 -O3 high_impact/libs/qoiconv.c -o $(QOICONV)
+	$(CC) $(USER_CFLAGS) -std=c99 -O3 high_impact/libs/qoiconv.c -o $(QOICONV)
 
 qoaconv: $(QOACONV)
 $(QOACONV): high_impact/libs/qoaconv.c
 	@mkdir -p $(@D)
-	$(CC) -std=c99 -O3 high_impact/libs/qoaconv.c -o $(QOACONV) -lm
+	$(CC) $(USER_CFLAGS) -std=c99 -O3 high_impact/libs/qoaconv.c -o $(QOACONV) -lm
 
 
 
