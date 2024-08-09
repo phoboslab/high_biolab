@@ -63,7 +63,7 @@ renderers is provided. See the first few lines in `Makefile` for more info.
 3. run `(cd build && ./game_sdl)`
 
 ### Fedora Sokol
-1. `dnf install libx11-devel libxcursor-devel libxi-devel alsa-lib-devel`
+1. `dnf install libX11-devel libXcursor-devel libXi-devel alsa-lib-devel`
 2. `make sokol`
 3. run `(cd build && ./game_sokol)`
 
@@ -73,7 +73,7 @@ renderers is provided. See the first few lines in `Makefile` for more info.
 3. run `(cd build && ./game_sdl)`
 
 ### OpenSUSE Sokol
-1. `zypper install libx11-devel libxcursor-devel libxi-devel alsa-lib-devel`
+1. `zypper install libX11-devel libXcursor-devel libXi-devel alsa-lib-devel`
 2. `make sokol`
 3. run `(cd build && ./game_sokol)`
 
