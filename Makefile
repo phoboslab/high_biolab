@@ -17,9 +17,13 @@
 # `make sokol DEBUG=true`    - native SOKOL platform with debug symbols
 # `make wasm`                - WASM (always with SOKOL platform)
 
+#  make sdl_release          - create qop archive and append to sdl build
+#  make sokol_release        - create qop archive and append to sokol build
+
 # `make assets`              - only convert assets
 # `make qoaconv`             - only build qoaconv (used to convert WAV to QOA)
 # `make qoiconv`             - only build qoiconv (used to convert PNG to QOI)
+# `make qopconv`             - only build qopconv (used to create asset archive)
 
 # `make clean`               - clean binaries
 # `make clean_assets`        - clean converted assets
@@ -52,6 +56,7 @@ TARGET_WASM ?= $(BUILD_DIR_WASM)/game.js
 
 QOICONV = high_impact/tools/qoiconv
 QOACONV = high_impact/tools/qoaconv
+QOPCONV = high_impact/tools/qopconv
 
 
 
@@ -139,10 +144,14 @@ $(QOICONV): high_impact/libs/qoiconv.c high_impact/libs/stb_image.h high_impact/
 	$(CC) $(USER_CFLAGS) -std=c99 -O3 high_impact/libs/qoiconv.c -o $(QOICONV)
 
 qoaconv: $(QOACONV)
-$(QOACONV): high_impact/libs/qoaconv.c
+$(QOACONV): high_impact/libs/qoaconv.c high_impact/libs/qoa.h
 	@mkdir -p $(@D)
 	$(CC) $(USER_CFLAGS) -std=c99 -O3 high_impact/libs/qoaconv.c -o $(QOACONV) -lm
 
+qopconv: $(QOPCONV)
+$(QOPCONV): high_impact/libs/qopconv.c high_impact/libs/qop.h
+	@mkdir -p $(@D)
+	$(CC) $(USER_CFLAGS) -std=c99 -O3 high_impact/libs/qopconv.c -o $(QOPCONV)
 
 
 # Assets  ----------------------------------------------------------------------
@@ -171,6 +180,9 @@ build/assets/%.json: assets/%.json
 	cp $< $@
 
 
+assets_archive: qopconv assets
+	$(QOPCONV) -d $(BUILD_DIR) assets $(BUILD_DIR)/assets.qop
+
 
 # Platform: Native/SDL ---------------------------------------------------------
 
@@ -190,6 +202,9 @@ $(OBJ_DIR)/sdl/%.o: %.c
 
 -include $(SDL_COMMON_DEPS)
 
+sdl_release: sdl assets_archive
+	cat $(TARGET_SDL) $(BUILD_DIR)/assets.qop > $(TARGET_SDL)_release
+	chmod a+x $(TARGET_SDL)_release
 
 
 # Platform: Native/SOKOL -------------------------------------------------------
@@ -207,6 +222,10 @@ $(OBJ_DIR)/sokol/%.o: %.c
 	$(CC) $(C_FLAGS) -DPLATFORM_SOKOL -MMD -MP -c $< -o $@
 
 -include $(SOKOL_COMMON_DEPS)
+
+sokol_release: sokol assets_archive
+	cat $(TARGET_SOKOL) $(BUILD_DIR)/assets.qop > $(TARGET_SOKOL)_release
+	chmod a+x $(TARGET_SOKOL)_release
 
 
 
