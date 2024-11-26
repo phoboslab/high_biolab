@@ -9,11 +9,20 @@
 # The tools needed to convert assets (PNG to QOI and WAV to QOA) are part of 
 # sdl/sokol/wasm targets.
 
+# Options:
+
+# RENDER   = GL|SOFTWARE|METAL (default GL; Metal only for macOS)
+# DEBUG    = true|false (default false)
+# USE_GL   = true|false (default false; only relevant on linux)
+
+
 # Examples:
 
 # `make sdl`                 - native SDL platform
 # `make sdl RENDER=SOFTWARE` - native SDL platform with the software renderer
+# `make sdl RENDER=METAL`    - native SDL platform with the Metal renderer
 # `make sokol`               - native SOKOL platform
+# `make sokol RENDER=METAL`  - native SOKOL platform with the Metal renderer
 # `make sokol DEBUG=true`    - native SOKOL platform with debug symbols
 # `make wasm`                - WASM (always with SOKOL platform)
 
@@ -75,6 +84,8 @@ endif
 
 ifeq ($(RENDER), GL)
 	C_FLAGS := $(C_FLAGS) -DRENDER_GL
+else ifeq ($(RENDER), METAL)
+	C_FLAGS := $(C_FLAGS) -DRENDER_METAL
 else ifeq ($(RENDER), SOFTWARE)
 	C_FLAGS := $(C_FLAGS) -DRENDER_SOFTWARE
 else
@@ -94,11 +105,15 @@ ifeq ($(UNAME_S), Darwin)
 	C_FLAGS := $(C_FLAGS) -x objective-c -I/opt/homebrew/include -D_THREAD_SAFE -w
 	L_FLAGS := $(L_FLAGS) -L$(BREW_HOME)/lib -framework Foundation
 
+	L_FLAGS_SOKOL = -framework Cocoa -framework QuartzCore -framework AudioToolbox
+
 	ifeq ($(RENDER), GL)
 		L_FLAGS := $(L_FLAGS) -GLU -framework OpenGL
+	else ifeq ($(RENDER), METAL)
+		C_FLAGS := $(C_FLAGS) -fobjc-arc
+		L_FLAGS := $(L_FLAGS) -framework Metal
+		L_FLAGS_SOKOL := $(L_FLAGS_SOKOL) -framework MetalKit
 	endif
-
-	L_FLAGS_SOKOL = -framework Cocoa -framework QuartzCore -framework AudioToolbox
 
 
 # Linux ------------------------------------------------------------------------
